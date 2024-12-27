@@ -31,11 +31,16 @@ function doGet(e) {
 
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   // sheet.appendRow("just test");
-  Logger.log("sheet name: "+ sheet.getName());
+  // Logger.log("sheet name: "+ sheet.getName());
 
   var data = e.parameter;
   Logger.log(data["tem"] + ", " + data["hum"]);  // should seperate with a string, otherwise becomes number calculation
   sheet.appendRow([new Date(), data["tem"], data["hum"]]);
+
+  if (data["alm"] != null) {
+    // https://chatgpt.com/share/676e807d-df14-8005-80cf-bff101b4699c
+    GmailApp.sendEmail("CharlesLiaoO@gmail.com", "InM A1 Notification", "InM A1 Alarm");
+  }
 
   return ContentService.createTextOutput("Data received successfully");
 }

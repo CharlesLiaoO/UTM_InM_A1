@@ -47,9 +47,11 @@ void sendData(float tem, float hum) {
 
   String url = "/macros/s/" + GAS_ID + "/exec?";
   String urlWithPars = url + "tem=" + String(tem) + "&hum=" + String(hum);
+  if (0)  // not for realtime notification
+    urlWithPars += "&alm=true";
+
   Serial.print("Requesting URL: ");
   Serial.println(urlWithPars);
-
   // Send HTTP GET request to Google Apps Script web app
   client.print(String("GET ") + urlWithPars + " HTTP/1.1\r\n" +
                 "Host: " + host + "\r\n" +
