@@ -2,6 +2,10 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
 
+// Ref:
+//   [HTTP GET, works] https://www.youtube.com/watch?v=UF6IodGvq2I;
+//   [HTTP POST, not specify httpClient lib，but script simple] https://www.youtube.com/watch?v=UF6IodGvq2I
+
 const char* ssid = "R1216_2.4GHz";
 const char* password = "r121612321";
 const char* host = "script.google.com";
@@ -26,10 +30,7 @@ void sendData(float tem, float hum) {
   WiFiClientSecure client;
 
   client.setInsecure();
-  // String GAS_ID = "AKfycbyv7q2daZfMTkITgr2dzcca0-zToiQTCGWBKE8CNBTmYeesVczupLXkBJN6N3TbzVY2"; // Spreadsheet script ID AFTER DEPLOYMENT COMPLETE
-  String GAS_ID = "1xKWhk7v38ztxQOtiykwv0SKDxTNLcHH7DCqhaj_zsY1A2kCkrETrlXcB"; // Spreadsheet script ID AFTER DEPLOYMENT COMPLETE
-  String host = "script.googleusercontent.com"; // Google Apps Script web app host
-  int httpsPort = 443; // HTTPS port
+  String GAS_ID = "AKfycbzX8WV7dugsY3Q9sYa1gqC_5jFHZhtaAvO_fXZ85c4KGmFoF8A2cDqev6hUdnkAzEZH5w"; // Spreadsheet script (Deployment) ID
 
   Serial.println("==========");
   Serial.print("Connecting to ");
@@ -41,22 +42,17 @@ void sendData(float tem, float hum) {
     return;
   }
 
-  // Construct the URL with all variables as query parameters
-  String string_t1 = String(tem);
-  String string_h1 = String(hum);
-
-  // String URL = "/macros/s/AKfycbyv7q2daZfMTkITgr2dzcca0-zToiQTCGWBKE8CNBTmYeesVczupLXkBJN6N3TbzVY2/exec?";  // Tutorial
-  // https://script.google.com/macros/s/AKfycbwpfpPkXKb2kFAE0_lDingrMaw9sSZOgK9LH_ZZA12mY6gkqkbq60cOQk5fG6of-Lir-Q/exec  Mine, copy from App Script -> Manage deployments -> Web app
-  String URL = "macros/s/AKfycbwpfpPkXKb2kFAE0_lDingrMaw9sSZOgK9LH_ZZA12mY6gkqkbq60cOQk5fG6of-Lir-Q/exec?";
-  String total_url = URL + "tem=" + string_t1 + "&hum=" + string_h1;
+  String url = "/macros/s/" + GAS_ID + "/exec?";
+  String urlWithPars = url + "tem=" + String(tem) + "&hum=" + String(hum);
   Serial.print("Requesting URL: ");
-  Serial.println(total_url);
+  Serial.println(urlWithPars);
 
   // Send HTTP GET request to Google Apps Script web app
-  client.print(String("GET ") + total_url + " HTTP/1.1\r\n" +
+  client.print(String("GET ") + urlWithPars + " HTTP/1.1\r\n" +
                 "Host: " + host + "\r\n" +
-                "User-Agent: BuildfailureDetectorESP8266\r\n" +
+                "User-Agent: Nothing\r\n" +
                 "Connection: close\r\n\r\n");
+  client.available();
 
   Serial.println("Request sent");
 }

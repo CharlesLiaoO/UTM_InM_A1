@@ -1,62 +1,41 @@
 // Google Sheet: https://docs.google.com/spreadsheets/d/1VTNoA74Wi1sqPqr2pXB-IP0QEWoFqXZ4KB1xOBvPi3E/edit?gid=0#gid=0
-//      Hearer: Date	Time	Temperature	Humidity
+//    Hearer: Time	Temperature	Humidity
 // App Script: https://script.google.com/u/0/home/projects/1xKWhk7v38ztxQOtiykwv0SKDxTNLcHH7DCqhaj_zsY1A2kCkrETrlXcB/edit
-//      Code: cannot update sheet.?
+//    Code ref: https://developers.google.com/apps-script/guides/web
 
 function testDoGet() {
-    // Simulated e object
-    var e = {
-        parameter: {
-            tem: "25.3",
-            hum: "60"
-        }
-    };
-
-    // Call doGet with the simulated e object
-    var result = doGet(e);
-
-    // Log the output to verify
-    Logger.log(result.getContent());
-}
-
-function stripQuotes(value) {
-    return value.replace(/^["']|["']$/g, "");
-}
-
-function doGet(e) {
-    Logger.log(JSON.stringify(e));
-    var result = '';
-    if (typeof e.parameter === 'undefined') {
-        result = 'No Parameters';
-    } else {
-        var sheet_id = '1VTNoA74Wi1sqPqr2pXB-IP0QEWoFqXZ4KB1xOBvPi3E'; // PASTE YOUR Spreadsheet ID (pink highlighted in previous slide)
-        var sheetFile = SpreadsheetApp.openById(sheet_id);
-        var sheet = sheetFile.getActiveSheet();
-        Logger.log('Sheet File: ' + sheetFile.getName() + '. Sheet Page: ' + sheet.getName());
-        var newRow = sheet.getLastRow() + 1;
-        var rowData = [];
-
-        var Curr_Date = new Date(); // to get the internet time and date
-        rowData[0] = Curr_Date; // Date in column A
-        var Curr_Time = Utilities.formatDate(Curr_Date, "Asia/Kuala_Lumpur", 'HH:mm:ss'); // depends on your location
-        rowData[1] = Curr_Time; // Time in column B
-
-        for (var param in e.parameter) {
-            Logger.log('In for loop, param=' + param);
-            var value = stripQuotes(e.parameter[param]);
-            Logger.log(param + ':' + e.parameter[param]);
-
-            switch (param) {
-                case 'tem':
-                    rowData[2] = value; // Temperature in column C as you set in your sheet
-                    result = 'Temperature In Written on column C';
-                    break;
-                case 'hum':
-                    rowData[3] = value; // Humidity in column D as you set in your sheet
-                    result += ', Temperature Out Written on column D';
-                    break;
-            }
-        }
+  // Simulated e object
+  var e = {
+    parameter: {
+      tem: "25.3",
+      hum: "60"
     }
-    return ContentService.createTextOutput(result);
+  };
+
+  // Call doGet with the simulated e object
+  var result = doGet(e);
+
+  // Log the output to verify
+  Logger.log(result.getContent());
+}
+
+// exe when get a HTTP GET request
+function doGet(e) {
+  // var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  // sheet.appendRow(["just test"]);
+  // return;
+
+  if (typeof e.parameter === 'undefined') {
+    return ContentService.createTextOutput("Parameters error");
+  }
+
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  // sheet.appendRow("just test");
+  Logger.log("sheet name: "+ sheet.getName());
+
+  var data = e.parameter;
+  Logger.log(data["tem"] + ", " + data["hum"]);  // should seperate with a string, otherwise becomes number calculation
+  sheet.appendRow([new Date(), data["tem"], data["hum"]]);
+
+  return ContentService.createTextOutput("Data received successfully");
 }
