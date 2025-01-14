@@ -1,3 +1,27 @@
+/* Fill in information from your Blynk Template here */
+/* Read more: https://bit.ly/BlynkInject */
+//#define BLYNK_TEMPLATE_ID           "TMPxxxxxx"
+//#define BLYNK_TEMPLATE_NAME         "Device"
+#define BLYNK_TEMPLATE_ID "TMPL6xqyA-YJ0"
+#define BLYNK_TEMPLATE_NAME "UTM EmSys A3"
+
+#define BLYNK_FIRMWARE_VERSION        "0.1.0"
+
+#define BLYNK_PRINT Serial
+//#define BLYNK_DEBUG
+
+#define APP_DEBUG
+
+// Uncomment your board, or configure a custom board in Settings.h
+#define USE_ESP32_DEV_MODULE
+//#define USE_ESP32C3_DEV_MODULE
+//#define USE_ESP32S2_DEV_KIT
+//#define USE_WROVER_BOARD
+//#define USE_TTGO_T7
+//#define USE_TTGO_T_OI
+
+#include "BlynkEdgent.h"
+
 #include <DHT.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
@@ -17,11 +41,16 @@ String GAS_ID = "AKfycbzX8WV7dugsY3Q9sYa1gqC_5jFHZhtaAvO_fXZ85c4KGmFoF8A2cDqev6h
 WiFiClientSecure client;
 
 const int pin_led = 2;  // built-in blue led
-const int pin_led_alm = 12;  // alm led
+const int pin_led_alm = 14;  // alm led
+const int pin_led_norm = 27; // norm led
 
-#define DHTPIN 14      // Define the data pin connected to D6
+#define DHTPIN 12      // Define the data pin connected to D6
 #define DHTTYPE DHT22  // Define the DHT sensor type
 DHT dht(DHTPIN, DHTTYPE);
+
+
+float temperature = 0;
+float humidity = 0;
 
 int t_cloud_intv = 0.1 * 60 * 1000;  // Interval of 1 minute (1 minute * 60 seconds * 1000 milliseconds)
 
@@ -62,6 +91,9 @@ void sendData(float tem, float hum) {
                 "Connection: close\r\n\r\n");
 
   Serial.println("Request sent");
+
+  Blynk.virtualWrite(V0, temperature);
+  Blynk.virtualWrite(V1, humidity);
 }
 
 void setup() {
@@ -72,8 +104,12 @@ void setup() {
     digitalWrite(pin_led, 0);
 
     pinMode(pin_led_alm, OUTPUT);
+    pinMode(pin_led_norm, OUTPUT);
 
     dht.begin();
+
+    BlynkEdgent.begin();
+
     // WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
     Serial.print("Connecting to WIFI");
@@ -93,10 +129,12 @@ void loop() {
     return;
   }
 
+  BlynkEdgent.run();
+
   delay(2000);
 
-  float humidity = dht.readHumidity();
-  float temperature = dht.readTemperature();
+  humidity = dht.readHumidity();
+  temperature = dht.readTemperature();
   // static float humidity;  // test code
   // static float temperature;
   // humidity += 0.1;
@@ -109,9 +147,11 @@ void loop() {
   }
 
   if (temperature > 39) {
+    digitalWrite(pin_led_norm, 0);
     digitalWrite(pin_led_alm, 1);
     Serial.println("Alm");
   } else {
+    digitalWrite(pin_led_norm, 1);
     digitalWrite(pin_led_alm, 0);
   }
 
