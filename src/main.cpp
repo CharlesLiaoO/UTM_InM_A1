@@ -1,13 +1,15 @@
 #include <DHT.h>
-#include <ESP8266WiFi.h>
+#include <WiFi.h>
 #include <WiFiClientSecure.h>
 
 // Ref:
 //   [HTTP GET, works] https://www.youtube.com/watch?v=UF6IodGvq2I;
 //   [HTTP POST, not specify httpClient lib，but script simple] https://www.youtube.com/watch?v=UF6IodGvq2I
 
-const char* ssid = "R1216_2.4GHz";
-const char* password = "r121612321";
+// const char* ssid = "R1216_2.4GHz";
+// const char* password = "r121612321";
+const char* ssid = "lch-k20p";
+const char* password = "lch1234567812";
 
 const char* host = "script.google.com";
 const int httpsPort = 443;
@@ -15,9 +17,10 @@ String GAS_ID = "AKfycbzX8WV7dugsY3Q9sYa1gqC_5jFHZhtaAvO_fXZ85c4KGmFoF8A2cDqev6h
 WiFiClientSecure client;
 
 const int pin_led = 2;  // built-in blue led
+const int pin_led_alm = 12;  // alm led
 
-#define DHTPIN D6      // Define the data pin connected to D6
-#define DHTTYPE DHT11  // Define the DHT sensor type
+#define DHTPIN 14      // Define the data pin connected to D6
+#define DHTTYPE DHT22  // Define the DHT sensor type
 DHT dht(DHTPIN, DHTTYPE);
 
 int t_cloud_intv = 0.1 * 60 * 1000;  // Interval of 1 minute (1 minute * 60 seconds * 1000 milliseconds)
@@ -28,7 +31,7 @@ void stopLoop(const char * msg=0) {
   if (msg)
     Serial.println(msg);
   Serial.println("Stop Loop");
-  digitalWrite(pin_led, 1);
+  digitalWrite(pin_led, 0);
 }
 
 void sendData(float tem, float hum) {
@@ -66,7 +69,9 @@ void setup() {
     Serial.println();
 
     pinMode(pin_led, OUTPUT);
-    digitalWrite(pin_led, 1);
+    digitalWrite(pin_led, 0);
+
+    pinMode(pin_led_alm, OUTPUT);
 
     dht.begin();
     // WiFi.mode(WIFI_STA);
@@ -79,7 +84,7 @@ void setup() {
     Serial.println();
     Serial.println("Connected to WiFi");
 
-    digitalWrite(pin_led, 0);
+    digitalWrite(pin_led, 1);
 }
 
 void loop() {
@@ -90,17 +95,24 @@ void loop() {
 
   delay(2000);
 
-  // float humidity = dht.readHumidity();
-  // float temperature = dht.readTemperature();
-  static float humidity;
-  static float temperature;
-  humidity += 0.1;
-  temperature += 0.1;
+  float humidity = dht.readHumidity();
+  float temperature = dht.readTemperature();
+  // static float humidity;  // test code
+  // static float temperature;
+  // humidity += 0.1;
+  // temperature += 0.1;
 
   if (isnan(humidity) || isnan(temperature)) {
     stopLoop("Failed to read from DHT sensor!");
   } else {
     Serial.printf("Humidity=%.1f%% Temperature=%.1f°C\n", humidity, temperature);
+  }
+
+  if (temperature > 39) {
+    digitalWrite(pin_led_alm, 1);
+    Serial.println("Alm");
+  } else {
+    digitalWrite(pin_led_alm, 0);
   }
 
   static int t_cloud_b = 0;

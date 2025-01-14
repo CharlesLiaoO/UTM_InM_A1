@@ -7,16 +7,19 @@ function testDoGet() {
   // Simulated e object
   var e = {
     parameter: {
-      tem: "25.3",
+      tem: 25.3,
       hum: "60"
     }
   };
 
+  for (var i=0; i<10; i++) {
+    e.parameter.tem++;
   // Call doGet with the simulated e object
   var result = doGet(e);
 
   // Log the output to verify
   Logger.log(result.getContent());
+  }
 }
 
 // exe when get a HTTP GET request
@@ -35,7 +38,9 @@ function doGet(e) {
 
   var data = e.parameter;
   Logger.log(data["tem"] + ", " + data["hum"]);  // should seperate with a string, otherwise becomes number calculation
-  sheet.appendRow([new Date(), data["tem"], data["hum"]]);
+  // sheet.appendRow([new Date(), data["tem"], data["hum"]]);
+  sheet.insertRowBefore(2);
+  sheet.getRange(2, 1, 1, 3).setValues([[ new Date(), data["tem"], data["hum"] ]]);  // data type: multiple rows
 
   if (data["alm"] != null) {
     // https://chatgpt.com/share/676e807d-df14-8005-80cf-bff101b4699c
